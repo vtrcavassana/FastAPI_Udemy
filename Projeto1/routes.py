@@ -12,6 +12,13 @@ roteador = APIRouter()
 # Path Parameter
 # O parâmetro 'moeda' na rota indica que o valor será fornecido na URL.
 # Por exemplo, se você acessar '/conversor/usd', o valor de 'moeda' será 'usd'.
+# @roteador.get('/conversor/{moeda}')
+# def conversor(moeda: str):
+#     return 'Funcionou!'
+
+# Query Parameter
+# Aqui, 'paraMoeda' e 'price' são parâmetros de consulta que são passados na URL e usados na função 'conversor'.
+# Por exemplo, 'conversor/?paraMoeda=USD,EUR,GBP&price=8.88'
 @roteador.get('/conversor/{moeda}')
-def conversor(moeda: str):
-    return 'Funcionou!'
+def conversor(moeda: str, paraMoeda: str, preco: float):
+    return 'Funcinou!!'
