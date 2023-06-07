@@ -1,10 +1,7 @@
 # Importando a biblioteca fastapi que será utilizada para criar a API
-from fastapi import APIRouter
-
+from fastapi import APIRouter, Query, Path
 from conversorMoedaSync import conversorSync
-
 from conversorMoedaAsync import conversorAsync
-
 from asyncio import gather
 
 # Iniciando o roteador da API, que será responsável por direcionar as requisições aos endpoints corretos
@@ -63,18 +60,26 @@ def syncConversor(moeda: str, paraMoeda: str, preco: float):
     return resultados
 
 @roteador.get('/conversor/async/{moeda}')
-async def asyncConversor(moeda: str, paraMoeda: str, preco: float):
+# Validação de Path e Query
+async def asyncConversor(moeda: str = Path(tamMax = 3, regex = '^[A-Z]{3}$'), paraMoeda: str = Query(regex = '^[A-Z]{3}(,[A-Z{3}])*$'), preco: float = Query(gt=0)):
     """
-    Rota para converter o preço de uma moeda para várias moedas de destino.
+    Esta é uma função assíncrona chamada asyncConversor que aceita três parâmetros.
 
     Parâmetros:
-    - moeda: str -> A moeda de origem.
-    - paraMoeda: str -> As moedas de destino separadas por vírgulas.
-    - preco: float -> O preço a ser convertido.
+    - moeda: str -> Este parâmetro representa a moeda de origem. Ele deve ser uma string de exatamente 3 letras maiúsculas.
+                     Isso é garantido usando o argumento `regex` que define uma expressão regular para validar a entrada.
+                     Além disso, o tamanho máximo da string é definido como 3 usando `tamMax`.
+
+    - paraMoeda: str -> Este parâmetro representa as moedas de destino. Deve ser uma ou mais strings de 3 letras maiúsculas,
+                         separadas por vírgulas. O argumento `regex` é usado para validar a entrada.
+
+    - preco: float -> Este parâmetro representa o preço a ser convertido. Deve ser um número flutuante maior que zero,
+                      conforme garantido pelo argumento `gt` (greater than) no Query, que estabelece esta condição de validação.
 
     Retorna:
     - dict: Um dicionário com o nome de cada moeda de destino e o preço convertido correspondente.
     """
+
     # Separa as moedas de destino em uma lista
     paraMoeda = paraMoeda.split(',')
 
