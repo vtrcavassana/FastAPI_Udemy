@@ -3,6 +3,10 @@ from fastapi import APIRouter
 
 from conversorMoedaSync import conversorSync
 
+from conversorMoedaAsync import conversorAsync
+
+from asyncio import gather
+
 # Iniciando o roteador da API, que será responsável por direcionar as requisições aos endpoints corretos
 roteador = APIRouter()
 
@@ -28,11 +32,10 @@ roteador = APIRouter()
 # def conversor(moeda: str, paraMoeda: str, preco: float):
 #     return 'Funcinou!!'
 
-# Este é o endpoint de rota atualmente em uso.
+# Rota SÍNCRONA
 # Ele aceita três parâmetros: 'moeda', 'paraMoeda' e 'preco'
-# 'moeda' é o código da moeda de origem, 'paraMoeda' é uma string de códigos de moeda de destino separados por vírgulas e 'preco' é o valor que será convertido
-@roteador.get('/conversor/{moeda}')
-def conversor(moeda: str, paraMoeda: str, preco: float):
+@roteador.get('/conversor/sync/{moeda}')
+def syncConversor(moeda: str, paraMoeda: str, preco: float):
     """
     Rota para converter o preço de uma moeda para várias moedas de destino.
 
@@ -53,7 +56,45 @@ def conversor(moeda: str, paraMoeda: str, preco: float):
     for cadaMoeda in paraMoeda:
         # Chama a função conversorSync para converter o preço para cada moeda de destino
         resposta = conversorSync(moeda=moeda, paraMoeda=cadaMoeda, preco=preco)
-        resultados[cadaMoeda] = resposta  # Armazena o resultado no dicionário
+        # Armazena o resultado no dicionário
+        resultados[cadaMoeda] = resposta
+
+    # Retorna o dicionário com os resultados da conversão
+    return resultados
+
+@roteador.get('/conversor/async/{moeda}')
+async def asyncConversor(moeda: str, paraMoeda: str, preco: float):
+    """
+    Rota para converter o preço de uma moeda para várias moedas de destino.
+
+    Parâmetros:
+    - moeda: str -> A moeda de origem.
+    - paraMoeda: str -> As moedas de destino separadas por vírgulas.
+    - preco: float -> O preço a ser convertido.
+
+    Retorna:
+    - dict: Um dicionário com o nome de cada moeda de destino e o preço convertido correspondente.
+    """
+    # Separa as moedas de destino em uma lista
+    paraMoeda = paraMoeda.split(',')
+
+    # Dicionário para armazenar os resultados da conversão
+    resultados = {}
+
+    # Array para armazenar as corotinas
+    corotinas = []
+
+    for cadaMoeda in paraMoeda:
+        # Chama a função conversorAsync para converter o preço para cada moeda de destino
+        corotina = conversorAsync(moeda=moeda, paraMoeda=cadaMoeda, preco=preco)
+        corotinas.append(corotina)
+
+    # Executa todas as corotinas simultaneamente
+    respostas = await gather(*corotinas)
+
+    for cadaMoeda, resposta in zip(paraMoeda, respostas):
+        # Armazena o resultado no dicionário
+        resultados[cadaMoeda] = resposta
 
     # Retorna o dicionário com os resultados da conversão
     return resultados
