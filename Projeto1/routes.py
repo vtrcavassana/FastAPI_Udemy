@@ -1,8 +1,18 @@
 # Importando a biblioteca fastapi que será utilizada para criar a API
 from fastapi import APIRouter, Query, Path
+
+# Importando as funções de conversão síncrona e assíncrona que serão utilizadas para conversões de moedas
 from conversorMoedaSync import conversorSync
 from conversorMoedaAsync import conversorAsync
+
+# Importando a biblioteca asyncio para lidar com execução assíncrona
 from asyncio import gather
+
+# Importando a função de conversão assíncrona v2 e os schemas necessários para validação e formatação de entrada/saída de dados
+from conversorMoedaAsyncV2 import conversorAsyncV2
+from schemas import converterInput
+from schemas import converterOutput
+
 
 # Iniciando o roteador da API, que será responsável por direcionar as requisições aos endpoints corretos
 roteador = APIRouter()
@@ -61,7 +71,7 @@ def syncConversor(moeda: str, paraMoeda: str, preco: float):
 
 @roteador.get('/conversor/async/{moeda}')
 # Validação de Path e Query
-async def asyncConversor(moeda: str = Path(tamMax = 3, regex = '^[A-Z]{3}$'), paraMoeda: str = Query(regex = '^[A-Z]{3}(,[A-Z{3}])*$'), preco: float = Query(gt=0)):
+async def asyncConversor(moeda: str = Path(regex = '^[A-Z]{3}$'), paraMoeda: str = Query(regex = '^[A-Z]{3}(,[A-Z]{3})*$'), preco: float = Query(gt=0)):
     """
     Esta é uma função assíncrona chamada asyncConversor que aceita três parâmetros.
 
@@ -103,3 +113,25 @@ async def asyncConversor(moeda: str = Path(tamMax = 3, regex = '^[A-Z]{3}$'), pa
 
     # Retorna o dicionário com os resultados da conversão
     return resultados
+
+# Rota ASSÍNCRONA V2 com entrada via corpo da requisição POST
+@roteador.post('/conversor/async/v2/{moeda}', response_model=converterOutput)
+async def asyncConversorV2(body: converterInput, moeda: str = Path(regex='^[A-Z]{3}$')):
+    # Pega as moedas de destino e o preço da entrada
+    paraMoeda = body.paraMoeda
+    preco = body.preco
+
+    # Inicializa uma lista para armazenar todas as corotinas
+    corotinas = []
+
+    # Para cada moeda de destino
+    for cadaMoeda in paraMoeda:
+        # Cria uma corotina para a conversão e adiciona à lista de corotinas
+        corotina = conversorAsyncV2(moeda=moeda, paraMoeda=cadaMoeda, preco=preco)
+        corotinas.append(corotina)
+
+    # Aguarda todas as corotinas se completarem
+    resultados = await gather(*corotinas)
+
+    # Retorna os resultados da conversão usando o modelo de resposta especificado
+    return converterOutput(mensagem='Executado com sucesso!', dado=resultados)
