@@ -22,7 +22,7 @@ async def conversorAsync(moeda: str, paraMoeda: str, preco: float):
     
     # Verifica se a resposta da API contém a chave 'Realtime Currency Exchange Rate'
     if 'Realtime Currency Exchange Rate' not in dadosDaAPI:
-        raise HTTPException(status_code=400, detail=f'Deu esse erro aqui: {erro}')
+        raise HTTPException(status_code=400, detail=f'Não existe parâmetro')
     
     # Obtém a taxa de câmbio atual da resposta da API
     precoCambio = float(dadosDaAPI['Realtime Currency Exchange Rate']['5. Exchange Rate'])
