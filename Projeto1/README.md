@@ -1,4 +1,4 @@
-# Projeto 1 - Conversor de preços em FastAPI
+# Projeto 1 - Conversor de moedas em FastAPI
 
 Este projeto consiste em uma aplicação FastAPI que serve como um conversor de preços entre diferentes moedas. Ele utiliza a API do Alphavantage para obter taxas de câmbio em tempo real.
 
