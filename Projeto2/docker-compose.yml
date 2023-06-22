@@ -8,6 +8,8 @@ services:
      - .:/app
     depends_on:
       - postgres
+    env_file:
+      - .env
 
 
   postgres:
