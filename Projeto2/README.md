@@ -50,3 +50,28 @@ Para iniciar somente o serviço PgAdmin:
 ```sh
 docker-compose up pgadmin
 ```
+
+### Executando migrações de banco de dados
+Primeiro, você precisa inicializar o Alembic em seu projeto, se ainda não o fez. Isso irá criar o diretório de migrações do Alembic. Você pode fazer isso com o seguinte comando:
+
+```sh
+docker-compose run app sh -c 'alembic init migrations'
+```
+
+Isso garante que a pasta de migrações seja criada como "migrations", que é um nome comum para diretórios de migração de banco de dados em muitos frameworks e bibliotecas de ORM.
+
+Para criar e aplicar migrações de banco de dados usando Alembic, você pode usar os seguintes comandos:
+
+Esses comandos devem ser executados cada vez que você fizer uma mudança no seu modelo de banco de dados que necessite de uma migração.
+
+Para gerar uma nova revisão de migração:
+
+```sh
+docker-compose run app sh -c 'alembic revision --autogenerate -m "sua mensagem de migração"'
+```
+
+Para aplicar as migrações ao banco de dados:
+
+```sh
+docker-compose run app sh -c 'alembic upgrade head'
+```
